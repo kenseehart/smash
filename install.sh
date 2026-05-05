@@ -20,11 +20,23 @@ cp "$tmp/smash.png" "$SHARE_DIR/smash.png"
 chmod +x "$SHARE_DIR/smash.py"
 
 echo ">> installing python deps (mss, Pillow)"
-python3 -m pip install --user --quiet --upgrade mss Pillow
+PY="${SMASH_PYTHON:-python3}"
+install_deps() {
+  $PY -m pip install --user --quiet --upgrade mss Pillow 2>/dev/null && return 0
+  $PY -m pip install --user --break-system-packages --quiet --upgrade mss Pillow 2>/dev/null && return 0
+  return 1
+}
+if ! install_deps; then
+  echo ">> ERROR: could not install mss/Pillow with $PY -m pip."
+  echo "   Install manually, then re-run, e.g.:"
+  echo "     $PY -m pip install --user mss Pillow"
+  echo "   or: pipx install mss && pipx install Pillow"
+  exit 1
+fi
 
 cat > "$BIN_DIR/smash" <<EOF
 #!/usr/bin/env bash
-exec python3 "$SHARE_DIR/smash.py" "\$@"
+exec $PY "$SHARE_DIR/smash.py" "\$@"
 EOF
 chmod +x "$BIN_DIR/smash"
 

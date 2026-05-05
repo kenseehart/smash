@@ -5,12 +5,20 @@ Take a fullscreen screenshot, composite `smash.png` centered on top, and display
 ## Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/kenseehart/smash/main/install.sh | bash
+curl -fsSL https://github.com/kenseehart/smash/archive/refs/heads/main.tar.gz | tar xz -C /tmp && bash /tmp/smash-main/install.sh
 ```
 
-This installs to `~/.local/share/smash/` and creates a `smash` launcher in `~/.local/bin/`.
+This installs `smash.py` and `smash.png` to `~/.local/share/smash/` and creates a `smash` launcher in `~/.local/bin/`. It also installs `mss` and `Pillow` via pip.
 
-Override location with `SMASH_PREFIX=/some/path` or pin a ref with `SMASH_REF=v0.1.0`.
+Pin a tagged release:
+
+```bash
+curl -fsSL https://github.com/kenseehart/smash/archive/refs/tags/v0.1.0.tar.gz | tar xz -C /tmp && bash /tmp/smash-0.1.0/install.sh
+```
+
+Environment overrides:
+- `SMASH_PREFIX=/some/path` — install root (default `~/.local`)
+- `SMASH_PYTHON=/path/to/python3` — python interpreter to use (default `python3`)
 
 ## Run
 

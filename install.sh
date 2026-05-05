@@ -8,15 +8,22 @@ SHARE_DIR="$PREFIX/share/smash"
 BIN_DIR="$PREFIX/bin"
 TARBALL_URL="https://github.com/$REPO/archive/$REF.tar.gz"
 
-echo ">> downloading $TARBALL_URL"
 mkdir -p "$SHARE_DIR" "$BIN_DIR"
-tmp="$(mktemp -d)"
-trap 'rm -rf "$tmp"' EXIT
 
-curl -fsSL "$TARBALL_URL" | tar -xz -C "$tmp" --strip-components=1
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$script_dir/smash.py" ] && [ -f "$script_dir/smash.png" ]; then
+  echo ">> using local payload from $script_dir"
+  src_dir="$script_dir"
+else
+  echo ">> downloading $TARBALL_URL"
+  tmp="$(mktemp -d)"
+  trap 'rm -rf "$tmp"' EXIT
+  curl -fsSL "$TARBALL_URL" | tar -xz -C "$tmp" --strip-components=1
+  src_dir="$tmp"
+fi
 
-cp "$tmp/smash.py"  "$SHARE_DIR/smash.py"
-cp "$tmp/smash.png" "$SHARE_DIR/smash.png"
+cp "$src_dir/smash.py"  "$SHARE_DIR/smash.py"
+cp "$src_dir/smash.png" "$SHARE_DIR/smash.png"
 chmod +x "$SHARE_DIR/smash.py"
 
 echo ">> installing python deps (mss, Pillow)"

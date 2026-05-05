@@ -8,8 +8,12 @@ try:
     import tkinter as tk
 except ImportError:
     sys.stderr.write(
-        "tkinter is required but not available. "
-        "On Debian/Ubuntu install with: sudo apt install python3-tk\n"
+        "tkinter is required but not available.\n"
+        "  - Linux (Debian/Ubuntu): sudo apt install python3-tk\n"
+        "  - macOS (Homebrew):       brew install python-tk\n"
+        "  - Windows:                use the official python.org installer\n"
+        "  - Or run smash via the bundled installer, which uses uv to fetch\n"
+        "    a self-contained CPython that ships with tkinter.\n"
     )
     raise
 

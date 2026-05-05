@@ -43,7 +43,14 @@ has_tkinter() {
 pick_python() {
   local candidates=()
   [ -n "${SMASH_PYTHON:-}" ] && candidates+=("$SMASH_PYTHON")
-  candidates+=(python3 /usr/bin/python3 /usr/bin/python3.12 /usr/bin/python3.11 /usr/bin/python3.10)
+  candidates+=(
+    python3
+    /usr/bin/python3
+    /usr/bin/python3.12 /usr/bin/python3.11 /usr/bin/python3.10
+    /usr/local/bin/python3
+    /opt/homebrew/bin/python3
+    /Library/Frameworks/Python.framework/Versions/Current/bin/python3
+  )
   for py in "${candidates[@]}"; do
     if has_tkinter "$py"; then
       echo "$py"

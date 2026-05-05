@@ -80,26 +80,54 @@ def load_png(path: str) -> Image.Image:
     return Image.open(path).convert("RGBA")
 
 
-def take_screenshot() -> Image.Image:
-    with mss.mss() as sct:
-        monitor = sct.monitors[0]
+def pick_active_monitor(sct: "mss.base.MSSBase") -> dict:
+    """Return the monitor dict for the screen the user is currently on.
+
+    Strategy: pick the monitor containing the mouse cursor; if that fails,
+    fall back to the first non-union monitor (mss `monitors[0]` is the union
+    of all displays, which is what we want to avoid).
+    """
+    physicals = sct.monitors[1:] if len(sct.monitors) > 1 else sct.monitors
+    try:
+        r = tk.Tk()
+        r.withdraw()
+        r.update_idletasks()
+        cx, cy = r.winfo_pointerx(), r.winfo_pointery()
+        r.destroy()
+        for m in physicals:
+            if (m["left"] <= cx < m["left"] + m["width"]
+                    and m["top"] <= cy < m["top"] + m["height"]):
+                return m
+    except Exception:
+        pass
+    for m in physicals:
+        if m.get("is_primary"):
+            return m
+    return physicals[0]
+
+
+def take_screenshot(monitor: dict) -> Image.Image:
+    with mss.MSS() as sct:
         shot = sct.grab(monitor)
         return Image.frombytes("RGB", shot.size, shot.rgb).convert("RGBA")
 
 
-def composite_centered(background: Image.Image, overlay: Image.Image) -> Image.Image:
+def composite_full(background: Image.Image, overlay: Image.Image) -> Image.Image:
+    """Scale overlay to the size of background and alpha-composite."""
+    scaled = overlay.resize(background.size, Image.LANCZOS)
     result = background.copy()
-
-    x = (background.width - overlay.width) // 2
-    y = (background.height - overlay.height) // 2
-
-    result.alpha_composite(overlay, (x, y))
+    result.alpha_composite(scaled)
     return result
 
 
-def show_fullscreen(image: Image.Image) -> None:
+def show_on_monitor(image: Image.Image, monitor: dict) -> None:
     root = tk.Tk()
-    root.attributes("-fullscreen", True)
+    root.overrideredirect(True)
+    root.geometry(
+        f"{monitor['width']}x{monitor['height']}"
+        f"+{monitor['left']}+{monitor['top']}"
+    )
+    root.attributes("-topmost", True)
     root.configure(background="black")
 
     root.bind("<Escape>", lambda event: root.destroy())
@@ -109,16 +137,19 @@ def show_fullscreen(image: Image.Image) -> None:
 
     label = tk.Label(root, image=photo, borderwidth=0, highlightthickness=0)
     label.image = photo
-    label.pack(expand=True)
+    label.pack(expand=True, fill="both")
 
+    root.focus_force()
     root.mainloop()
 
 
 def main() -> None:
     overlay = load_png(PNG_PATH)
-    screenshot = take_screenshot()
-    result = composite_centered(screenshot, overlay)
-    show_fullscreen(result)
+    with mss.MSS() as sct:
+        monitor = pick_active_monitor(sct)
+    screenshot = take_screenshot(monitor)
+    result = composite_full(screenshot, overlay)
+    show_on_monitor(result, monitor)
 
 
 if __name__ == "__main__":

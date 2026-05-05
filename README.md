@@ -8,7 +8,7 @@ Take a fullscreen screenshot, composite `smash.png` centered on top, and display
 curl -fsSL https://github.com/kenseehart/smash/archive/refs/heads/main.tar.gz | tar xz -C /tmp && bash /tmp/smash-main/install.sh
 ```
 
-This installs `smash.py` and `smash.png` to `~/.local/share/smash/` and creates a `smash` launcher in `~/.local/bin/`. It also installs `mss` and `Pillow` via pip.
+This installs `smash.py` and `smash.png` to `~/.local/share/smash/` and creates a `smash` launcher in `~/.local/bin/`. The `mss` and `Pillow` dependencies auto-install on first run (and pip itself is bootstrapped via `ensurepip` / `get-pip.py` if missing).
 
 Pin a tagged release:
 

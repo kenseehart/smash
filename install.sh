@@ -7,6 +7,7 @@ PREFIX="${SMASH_PREFIX:-$HOME/.local}"
 SHARE_DIR="$PREFIX/share/smash"
 BIN_DIR="$PREFIX/bin"
 TARBALL_URL="https://github.com/$REPO/archive/$REF.tar.gz"
+PY="${SMASH_PYTHON:-python3}"
 
 mkdir -p "$SHARE_DIR" "$BIN_DIR"
 
@@ -26,21 +27,6 @@ cp "$src_dir/smash.py"  "$SHARE_DIR/smash.py"
 cp "$src_dir/smash.png" "$SHARE_DIR/smash.png"
 chmod +x "$SHARE_DIR/smash.py"
 
-echo ">> installing python deps (mss, Pillow)"
-PY="${SMASH_PYTHON:-python3}"
-install_deps() {
-  $PY -m pip install --user --quiet --upgrade mss Pillow 2>/dev/null && return 0
-  $PY -m pip install --user --break-system-packages --quiet --upgrade mss Pillow 2>/dev/null && return 0
-  return 1
-}
-if ! install_deps; then
-  echo ">> ERROR: could not install mss/Pillow with $PY -m pip."
-  echo "   Install manually, then re-run, e.g.:"
-  echo "     $PY -m pip install --user mss Pillow"
-  echo "   or: pipx install mss && pipx install Pillow"
-  exit 1
-fi
-
 cat > "$BIN_DIR/smash" <<EOF
 #!/usr/bin/env bash
 exec $PY "$SHARE_DIR/smash.py" "\$@"
@@ -51,6 +37,7 @@ echo ">> installed:"
 echo "   $SHARE_DIR/smash.py"
 echo "   $SHARE_DIR/smash.png"
 echo "   $BIN_DIR/smash"
+echo ">> python deps (mss, Pillow) will auto-install on first run."
 case ":$PATH:" in
   *":$BIN_DIR:"*) ;;
   *) echo ">> NOTE: $BIN_DIR is not on \$PATH; add it to use 'smash' directly." ;;
